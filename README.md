@@ -4,6 +4,14 @@ Run the binary to see available commands.
 
 Use environmental variable `WGMAN_CONFIG` to specify a different config file.
 
+There's a [prebuilt docker image](https://hub.docker.com/r/ronmi/wgman) for amd64.
+
+##### Manual installation
+
+1. [Install Go compiler](https://golang.org/dl/)
+2. `git clone https://github.com/Ronmi/wgman`
+3. `go mod download && go build`
+
 # Examples
 
 ```sh
@@ -17,6 +25,8 @@ wgman add gw gw.my.com:1234
 wgman add-inner gw db 192.168.1.5
 # list all peers
 wgman list
+# install your wireguard config
+wgman gen nb > /etc/wireguard/mynet.conf && wg-quick up mynet
 # creates a new network in test.json
 WGMAN_CONFIG=test.json wgman new 10.1.1.0
 ```
