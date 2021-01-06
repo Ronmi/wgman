@@ -133,6 +133,21 @@ PreDown = iptables -D FORWARD -i %%i -j ACCEPT
 			"PreDown = iptables -t nat -D POSTROUTING -s %s/24 -d %s -j MASQUERADE\n",
 			myip, i.RealIP,
 		)
+		fmt.Fprintf(buf,
+			`#### To connect %s into this virtual network, add a routing rule for %s:
+####     sudo route add -net %s/24 gw ip_address_of_this_host
+#### and uncomment 2 lines below
+`,
+			name, name, myip,
+		)
+		fmt.Fprintf(buf,
+			"#PostUp = iptables -t nat -A POSTROUTING -s %s -d %s/24 -j MASQUERADE\n",
+			i.RealIP, myip,
+		)
+		fmt.Fprintf(buf,
+			"#PreDown = iptables -t nat -D POSTROUTING -s %s -d %s/24 -j MASQUERADE\n",
+			i.RealIP, myip,
+		)
 	}
 
 	return buf.String()

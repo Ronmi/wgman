@@ -20,7 +20,7 @@ func (s *PeerTestSuite) genInterfaceSimple(t *testing.T) {
 		Port:    0,
 		IP:      5,
 		ExtIP:   "",
-		Inners:  map[string]InnerPeer{},
+		Inners:  map[string]*InnerPeer{},
 	}
 	const expect = `[Interface]
 PrivateKey = priv
@@ -46,7 +46,7 @@ func (s *PeerTestSuite) genPeerSimple(t *testing.T) {
 		Port:    0,
 		IP:      5,
 		ExtIP:   "",
-		Inners:  map[string]InnerPeer{},
+		Inners:  map[string]*InnerPeer{},
 	}
 	const expect = `[Peer]
 PublicKey = pub
@@ -70,7 +70,7 @@ func (s *PeerTestSuite) genInterfaceExtern(t *testing.T) {
 		Port:    1234,
 		IP:      5,
 		ExtIP:   "5.6.7.8",
-		Inners:  map[string]InnerPeer{},
+		Inners:  map[string]*InnerPeer{},
 	}
 	const expect = `[Interface]
 PrivateKey = priv
@@ -97,7 +97,7 @@ func (s *PeerTestSuite) genPeerExtern(t *testing.T) {
 		Port:    1234,
 		IP:      5,
 		ExtIP:   "5.6.7.8",
-		Inners:  map[string]InnerPeer{},
+		Inners:  map[string]*InnerPeer{},
 	}
 	const expect = `[Peer]
 PublicKey = pub
@@ -122,7 +122,7 @@ func (s *PeerTestSuite) genInterfaceInner(t *testing.T) {
 		Port:    1234,
 		IP:      5,
 		ExtIP:   "5.6.7.8",
-		Inners: map[string]InnerPeer{
+		Inners: map[string]*InnerPeer{
 			"inner": {
 				RealIP: "10.1.1.1",
 				IP:     6,
@@ -142,6 +142,11 @@ PostUp = iptables -t nat -A PREROUTING -i %i -d 1.2.3.6 -j DNAT --to 10.1.1.1
 PostUp = iptables -t nat -A POSTROUTING -s 1.2.3.6/24 -d 10.1.1.1 -j MASQUERADE
 PreDown = iptables -t nat -D PREROUTING -i %i -d 1.2.3.6 -j DNAT --to 10.1.1.1
 PreDown = iptables -t nat -D POSTROUTING -s 1.2.3.6/24 -d 10.1.1.1 -j MASQUERADE
+#### To connect inner into this virtual network, add a routing rule for inner:
+####     sudo route add -net 1.2.3.6/24 gw ip_address_of_this_host
+#### and uncomment 2 lines below
+#PostUp = iptables -t nat -A POSTROUTING -s 10.1.1.1 -d 1.2.3.6/24 -j MASQUERADE
+#PreDown = iptables -t nat -D POSTROUTING -s 10.1.1.1 -d 1.2.3.6/24 -j MASQUERADE
 `
 
 	actual := p.GenInterface(s.ipnet)
@@ -161,7 +166,7 @@ func (s *PeerTestSuite) genPeerInner(t *testing.T) {
 		Port:    1234,
 		IP:      5,
 		ExtIP:   "5.6.7.8",
-		Inners: map[string]InnerPeer{
+		Inners: map[string]*InnerPeer{
 			"inner": {
 				RealIP: "10.1.1.1",
 				IP:     6,
